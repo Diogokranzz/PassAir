@@ -54,7 +54,7 @@ def search_flights_data(origin, dest, date_str=None):
                         
                         flight_dest = flight.get('airport', {}).get('destination', {}).get('code', {}).get('iata')
                         
-                        # Filter by destination
+                        
                         if flight_dest == dest:
                             airline = flight.get('airline') or {}
                             aircraft = flight.get('aircraft') or {}
@@ -62,7 +62,7 @@ def search_flights_data(origin, dest, date_str=None):
                             times = flight.get('time') or {}
                             identification = flight.get('identification') or {}
                             
-                            # Filter by date if provided
+                          
                             scheduled_ts = times.get('scheduled', {}).get('departure')
                             if date_str and scheduled_ts:
                                 flight_date = get_date_from_ts(scheduled_ts)
@@ -72,14 +72,12 @@ def search_flights_data(origin, dest, date_str=None):
                             airline_iata = airline.get('code', {}).get('iata')
                             airline_icao = airline.get('code', {}).get('icao')
                             
-                            # Logo fallback logic
+                           
                             logo_url = None
                             if airline_iata:
                                 logo_url = f"https://pics.avs.io/200/200/{airline_iata}.png"
                             elif airline_icao:
-                                # Try to map ICAO to IATA if possible, or just use ICAO (pics.avs.io usually needs IATA)
-                                # For now, leave as None or try ICAO
-                                pass
+                              
 
                             flights_found.append({
                                 "id": identification.get('id'),
@@ -101,7 +99,7 @@ def search_flights_data(origin, dest, date_str=None):
                                 "status": status.get('text')
                             })
         
-        # Remove duplicates based on flight number and time
+        
         unique_flights = []
         seen = set()
         for f in flights_found:
