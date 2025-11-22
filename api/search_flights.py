@@ -2,14 +2,22 @@ from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 import sys
 import json
+import concurrent.futures
+
+flight_api_error = None
 try:
     from FlightRadar24 import FlightRadar24API
 except ImportError:
-    from FlightRadarAPI import FlightRadarAPI as FlightRadar24API
-import concurrent.futures
+    try:
+        from FlightRadarAPI import FlightRadarAPI as FlightRadar24API
+    except ImportError as e:
+        flight_api_error = str(e)
 
 
 def search_flights_data(origin, dest):
+    if flight_api_error:
+        return {"success": False, "error": f"Import Error: {flight_api_error}"}
+
     try:
         fr_api = FlightRadar24API()
         

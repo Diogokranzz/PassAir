@@ -2,13 +2,21 @@ from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 import sys
 import json
+
+flight_api_error = None
 try:
     from FlightRadar24 import FlightRadar24API
 except ImportError:
-    from FlightRadarAPI import FlightRadarAPI as FlightRadar24API
+    try:
+        from FlightRadarAPI import FlightRadarAPI as FlightRadar24API
+    except ImportError as e:
+        flight_api_error = str(e)
 
 
 def get_flights_in_bounds(min_lat=None, max_lat=None, min_lon=None, max_lon=None, limit=1500):
+    if flight_api_error:
+        return {"success": False, "error": f"Import Error: {flight_api_error}"}
+
     try:
         fr_api = FlightRadar24API()
         
@@ -45,7 +53,7 @@ def get_flights_in_bounds(min_lat=None, max_lat=None, min_lon=None, max_lon=None
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-# Vercel Handler
+
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         query = urlparse(self.path).query
