@@ -52,13 +52,24 @@ def get_flight_details_data(flight_id, airline_icao=None, aircraft_code=None):
                             data["destination"] = flight["airport"]["destination"].get("name")
                     if "status" in flight and flight["status"]:
                         data["status"] = flight["status"].get("text")
+                    
+                    # Extract airline logo if available in details
+                    if "airline" in flight and flight["airline"]:
+                        airline_data = flight["airline"]
+                        airline_iata = airline_data.get("code", {}).get("iata")
+                        airline_icao_code = airline_data.get("code", {}).get("icao")
+                        logo_code = airline_iata or airline_icao_code
+                        if logo_code:
+                            data["airline_logo"] = f"https://pics.avs.io/200/200/{logo_code}.png"
+
             except Exception:
                 pass
 
         if not image_url and airline_icao:
             try:
+                # Fallback: Search for other flights by this airline to find a matching aircraft image
                 flights = fr_api.get_flights(airline=airline_icao)
-                flights = flights[:10]
+                flights = flights[:15] # Check up to 15 flights
                 
                 candidate_image = None
                 fallback_image = None
@@ -66,19 +77,21 @@ def get_flight_details_data(flight_id, airline_icao=None, aircraft_code=None):
                 target_simplified = None
                 if aircraft_code and aircraft_code != "N/A":
                     import re
-                    match = re.search(r'(\d{3}|A3\d{2})', aircraft_code)
+                    # Extract core aircraft code (e.g., B738 from B738MAX)
+                    match = re.search(r'([A-Z0-9]{3,4})', aircraft_code)
                     if match:
                         target_simplified = match.group(1)
 
                 def check_candidate(f):
                     try:
+                        # We need to get details to see images
                         details = fr_api.get_flight_details(f)
                         if 'aircraft' in details and 'images' in details['aircraft']:
                             images = details['aircraft']['images']
                             img_src = None
-                            if 'medium' in images and images['medium']:
+                            if 'medium' in images and len(images['medium']) > 0:
                                 img_src = images['medium'][0]['src']
-                            elif 'large' in images and images['large']:
+                            elif 'large' in images and len(images['large']) > 0:
                                 img_src = images['large'][0]['src']
                             
                             if img_src:
@@ -87,30 +100,38 @@ def get_flight_details_data(flight_id, airline_icao=None, aircraft_code=None):
                         pass
                     return None
 
-                with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
                     results = list(executor.map(check_candidate, flights))
 
                 for result in results:
                     if result:
-                        f, img_src = result
+                        f_obj, img_src = result
                         
+                        # Keep the first image found as a generic fallback
                         if not fallback_image:
                             fallback_image = img_src
                         
+                        # If we have a target aircraft code, try to match it
                         if target_simplified:
-                            candidate_code = f.aircraft_code
+                            candidate_code = f_obj.aircraft_code or ""
                             
-                            if target_simplified in candidate_code:
+                            # Exact or partial match
+                            if target_simplified in candidate_code or candidate_code in target_simplified:
                                 candidate_image = img_src
                                 break
                             
-                            if target_simplified == "A320" and "A20" in candidate_code:
+                            # Specific handling for common families
+                            if "A32" in target_simplified and "A32" in candidate_code: # A320 family
+                                candidate_image = img_src
+                                break
+                            if "B73" in target_simplified and "B73" in candidate_code: # B737 family
                                 candidate_image = img_src
                                 break
                 
                 image_url = candidate_image or fallback_image
                                 
-            except Exception:
+            except Exception as e:
+                # print(f"Fallback search error: {e}")
                 pass
 
         if image_url:

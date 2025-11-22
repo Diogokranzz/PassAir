@@ -63,6 +63,11 @@ def get_live_departures_data(airport_iata="GRU"):
                         if scheduled_arr:
                             arr_time_str = datetime.datetime.fromtimestamp(scheduled_arr).strftime('%H:%M')
 
+                        airline_iata = airline.get('code', {}).get('iata')
+                        airline_icao = airline.get('code', {}).get('icao')
+                        logo_code = airline_iata or airline_icao
+                        logo_url = f"https://pics.avs.io/200/200/{logo_code}.png" if logo_code else None
+
                         departures.append({
                             "id": identification.get('id') or str(uuid.uuid4()),
                             "callsign": identification.get('callsign') or "N/A",
@@ -70,8 +75,8 @@ def get_live_departures_data(airport_iata="GRU"):
                             "origin": airport_iata,
                             "destination": flight.get('airport', {}).get('destination', {}).get('code', {}).get('iata') or "N/A",
                             "airline": airline.get('name') or "Unknown",
-                            "airline_icao": airline.get('code', {}).get('icao'),
-                            "airline_logo": f"https://pics.avs.io/200/200/{airline.get('code', {}).get('iata')}.png" if airline.get('code', {}).get('iata') else None,
+                            "airline_icao": airline_icao,
+                            "airline_logo": logo_url,
                             "aircraft": aircraft.get('model', {}).get('text') or "N/A",
                             "status": status,
                             "duration": duration_str,
