@@ -11,10 +11,11 @@ export async function getLiveDepartures(airport: string = "GRU") {
             const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
             const host = process.env.VERCEL_URL; // Vercel automatically sets this
             const url = `${protocol}://${host}/api/live_departures?airport=${airport}`;
-
+            console.log(`Fetching from Python API: ${url}`);
             const res = await fetch(url);
             if (!res.ok) {
-                throw new Error(`Failed to fetch from Python API: ${res.statusText}`);
+                const text = await res.text();
+                throw new Error(`Failed to fetch from Python API (${res.status}): ${text}`);
             }
             return await res.json();
         }
@@ -40,6 +41,6 @@ export async function getLiveDepartures(airport: string = "GRU") {
         }
     } catch (error) {
         console.error("Flight Service Error:", error);
-        return { success: false, error: "Internal server error" };
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
 }
