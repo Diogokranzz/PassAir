@@ -14,7 +14,7 @@ except ImportError as e1:
         flight_api_error = f"Primary: {e1} | Fallback: {e2}"
 
 def get_mock_flights():
-    # Return some static flights for fallback/demo purposes
+    
     return [
         {
             "id": "mock1", "callsign": "LA3418", "latitude": -23.43, "longitude": -46.47, "heading": 45,
@@ -39,7 +39,7 @@ def get_mock_flights():
     ]
 
 def get_flights_in_bounds(min_lat=None, max_lat=None, min_lon=None, max_lon=None, limit=1500):
-    # If API import failed, return mock data immediately
+    
     if flight_api_error:
         return {"success": True, "data": get_mock_flights(), "message": f"API Error, using mock. {flight_api_error}"}
 
@@ -55,12 +55,11 @@ def get_flights_in_bounds(min_lat=None, max_lat=None, min_lon=None, max_lon=None
                 flights = fr_api.get_flights()
         except Exception as api_err:
             print(f"API Call Error: {api_err}")
-            # If API call fails (e.g. blocking), fall through to mock check
+           
 
-        # If no flights found (or API failed), use mock data if we are in a 'demo' mode or just to show something
+       
         if not flights:
-             # For debugging: always return mock data if real data is empty
-             # This ensures the map is NEVER empty during this troubleshooting phase
+             
              return {"success": True, "data": get_mock_flights(), "message": "No flights from API, using mock data"}
 
         flight_data = []
@@ -90,7 +89,7 @@ def get_flights_in_bounds(min_lat=None, max_lat=None, min_lon=None, max_lon=None
         return {"success": True, "data": flight_data, "count": len(flight_data)}
 
     except Exception as e:
-        # Fallback to mock data on any unexpected error
+       
         return {"success": True, "data": get_mock_flights(), "message": f"Exception: {str(e)}, using mock data"}
 
 
