@@ -67,9 +67,9 @@ def get_flight_details_data(flight_id, airline_icao=None, aircraft_code=None):
 
         if not image_url and airline_icao:
             try:
-                # Fallback: Search for other flights by this airline to find a matching aircraft image
+               
                 flights = fr_api.get_flights(airline=airline_icao)
-                flights = flights[:15] # Check up to 15 flights
+                flights = flights[:15] 
                 
                 candidate_image = None
                 fallback_image = None
@@ -77,14 +77,14 @@ def get_flight_details_data(flight_id, airline_icao=None, aircraft_code=None):
                 target_simplified = None
                 if aircraft_code and aircraft_code != "N/A":
                     import re
-                    # Extract core aircraft code (e.g., B738 from B738MAX)
+                    
                     match = re.search(r'([A-Z0-9]{3,4})', aircraft_code)
                     if match:
                         target_simplified = match.group(1)
 
                 def check_candidate(f):
                     try:
-                        # We need to get details to see images
+                       
                         details = fr_api.get_flight_details(f)
                         if 'aircraft' in details and 'images' in details['aircraft']:
                             images = details['aircraft']['images']
@@ -107,20 +107,20 @@ def get_flight_details_data(flight_id, airline_icao=None, aircraft_code=None):
                     if result:
                         f_obj, img_src = result
                         
-                        # Keep the first image found as a generic fallback
+                       
                         if not fallback_image:
                             fallback_image = img_src
                         
-                        # If we have a target aircraft code, try to match it
+                       
                         if target_simplified:
                             candidate_code = f_obj.aircraft_code or ""
                             
-                            # Exact or partial match
+                            
                             if target_simplified in candidate_code or candidate_code in target_simplified:
                                 candidate_image = img_src
                                 break
                             
-                            # Specific handling for common families
+                           
                             if "A32" in target_simplified and "A32" in candidate_code: # A320 family
                                 candidate_image = img_src
                                 break
@@ -131,7 +131,7 @@ def get_flight_details_data(flight_id, airline_icao=None, aircraft_code=None):
                 image_url = candidate_image or fallback_image
                                 
             except Exception as e:
-                # print(f"Fallback search error: {e}")
+                
                 pass
 
         if image_url:
