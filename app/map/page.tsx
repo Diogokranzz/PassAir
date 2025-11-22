@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 import { FlightSidebar } from "@/components/flight-sidebar";
 import { AnimatePresence } from "framer-motion";
 
-// Dynamically import the map component to avoid SSR issues with Leaflet
+
 const FlightMap = dynamic(() => import("@/components/flight-map"), {
     ssr: false,
     loading: () => (
@@ -53,7 +53,7 @@ export default function MapPage() {
     const [bounds, setBounds] = useState<{ minLat: number, maxLat: number, minLon: number, maxLon: number } | null>(null);
 
     const fetchFlights = async () => {
-        // Don't set loading to true on refresh to keep map interactive
+
         if (flights.length === 0) setLoading(true);
 
         try {
@@ -75,13 +75,16 @@ export default function MapPage() {
                 url += `?${params.toString()}`;
             }
 
+            console.log("Fetching flights from:", url); // DEBUG
             const res = await fetch(url);
             const data = await res.json();
+            console.log("Flight data received:", data.success, data.data?.length); // DEBUG
 
             if (data.success) {
                 setFlights(data.data);
                 setError("");
             } else {
+                console.error("Flight fetch error:", data.error); // DEBUG
                 setError("Failed to load flight data");
             }
         } catch (err) {
@@ -93,9 +96,9 @@ export default function MapPage() {
 
     useEffect(() => {
         fetchFlights();
-        const interval = setInterval(fetchFlights, 8000); // Refresh every 8 seconds
+        const interval = setInterval(fetchFlights, 8000);
         return () => clearInterval(interval);
-    }, [bounds]); // Re-fetch when bounds change
+    }, [bounds]);
 
     return (
         <main className="h-screen bg-background flex flex-col overflow-hidden relative">

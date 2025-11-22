@@ -26,6 +26,9 @@ def get_flights_in_bounds(min_lat=None, max_lat=None, min_lon=None, max_lon=None
         else:
             flights = fr_api.get_flights()
 
+        if not flights:
+             return {"success": True, "data": [], "message": "No flights found from FlightRadarAPI"}
+
         flight_data = []
         count = 0
         limit = int(limit)
@@ -50,10 +53,10 @@ def get_flights_in_bounds(min_lat=None, max_lat=None, min_lon=None, max_lon=None
             })
             count += 1
             
-        return {"success": True, "data": flight_data}
+        return {"success": True, "data": flight_data, "count": len(flight_data)}
 
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        return {"success": False, "error": f"Service Error: {str(e)}", "type": type(e).__name__}
 
 
 class handler(BaseHTTPRequestHandler):
