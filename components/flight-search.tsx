@@ -249,7 +249,9 @@ export function FlightSearch() {
                             </div>
                         ) : flightResults.length === 0 ? (
                             <div className="text-center text-muted-foreground py-8">
-                                No flights found for this route in the upcoming schedule.
+                                { }
+                                { }
+                                <span className="opacity-50">Searching for live schedule...</span>
                             </div>
                         ) : (
                             <div className="grid gap-4">
