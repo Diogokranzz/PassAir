@@ -15,6 +15,7 @@ export function HomeClient({ initialFlights = [] }: HomeClientProps) {
     const [flights, setFlights] = useState<any[]>(initialFlights);
     const [loading, setLoading] = useState(true);
     const [selectedFlight, setSelectedFlight] = useState<any>(null);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchFlights = async () => {
@@ -23,9 +24,13 @@ export function HomeClient({ initialFlights = [] }: HomeClientProps) {
                 const data = await res.json();
                 if (data.success) {
                     setFlights(data.data);
+                } else {
+                    setError(data.error || "Failed to load flights");
+                    console.error("API Error:", data.error);
                 }
             } catch (error) {
                 console.error("Failed to fetch live departures:", error);
+                setError("Network error or API unreachable");
             } finally {
                 setLoading(false);
             }
@@ -78,6 +83,11 @@ export function HomeClient({ initialFlights = [] }: HomeClientProps) {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {error && (
+                        <div className="col-span-full p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-center">
+                            <p>Error loading flights: {error}</p>
+                        </div>
+                    )}
                     {loading ? (
 
                         Array.from({ length: 6 }).map((_, i) => (
