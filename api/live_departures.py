@@ -68,21 +68,21 @@ def get_live_departures_data(airport_iata="GRU"):
                         
                         flight_number = identification.get('number', {}).get('default') or "N/A"
                         
-                        # Fix "N/A" callsign by using flight number
+                        
                         callsign = identification.get('callsign')
                         if not callsign or callsign == "N/A":
                             callsign = flight_number
 
                         if not airline_icao and flight_number != "N/A":
                             import re
-                            # Try to extract code from flight number
+                            
                             match = re.match(r'^([A-Z0-9]{2,3})\d+', flight_number)
                             if match:
                                 code = match.group(1)
                                 if len(code) == 3:
                                     airline_icao = code
                                 elif len(code) == 2:
-                                    # Common IATA to ICAO mapping for GRU airlines
+                                    
                                     iata_map = {
                                         'LA': 'LAN', 'JJ': 'TAM', # LATAM
                                         'G3': 'GLO', # GOL
@@ -115,7 +115,7 @@ def get_live_departures_data(airport_iata="GRU"):
                                     airline_icao = iata_map.get(code)
                         
                         logo_code = airline_iata or airline_icao
-                        # If we still don't have a logo code but have a flight number code, use that
+                        
                         if not logo_code and flight_number != "N/A":
                              import re
                              match = re.match(r'^([A-Z0-9]{2,3})\d+', flight_number)
