@@ -15,6 +15,10 @@
         {
             "source": "/api/flight_service",
             "destination": "/api/flight_service.py"
+        },
+        {
+            "source": "/api/flights/:id",
+            "destination": "/api/flight_details.py?id=:id"
         }
     ]
 }
