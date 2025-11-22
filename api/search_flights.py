@@ -30,12 +30,12 @@ def search_flights_data(origin, dest, date_str=None):
 
         def fetch_page(page):
             try:
-                # Fetch airport details (schedule)
+               
                 return fr_api.get_airport_details(origin, page=page)
             except:
                 return None
 
-        # Fetch more pages to ensure we catch all flights (increased from 3 to 6)
+        
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             results = list(executor.map(fetch_page, range(1, 7)))
 
@@ -53,7 +53,7 @@ def search_flights_data(origin, dest, date_str=None):
                         
                         flight_dest = flight.get('airport', {}).get('destination', {}).get('code', {}).get('iata')
                         
-                        # Filter by destination
+                        
                         if flight_dest == dest:
                             airline = flight.get('airline') or {}
                             aircraft = flight.get('aircraft') or {}
@@ -61,27 +61,24 @@ def search_flights_data(origin, dest, date_str=None):
                             times = flight.get('time') or {}
                             identification = flight.get('identification') or {}
                             
-                            # Filter by date if provided
+                            
                             scheduled_ts = times.get('scheduled', {}).get('departure')
                             if date_str and scheduled_ts:
                                 flight_date = get_date_from_ts(scheduled_ts)
-                                # Allow flights from the requested date OR the next day (to handle timezone shifts/late flights)
-                                # This ensures we don't hide valid flights just because of UTC vs Local time
+                                
                                 if flight_date != date_str:
-                                    # Check if it's the next day? 
-                                    # For now, let's just be permissive. If it's in the schedule list (which is usually near-term), show it.
-                                    # The user wants to see options.
+                                    
                                     pass 
                             
                             airline_iata = airline.get('code', {}).get('iata')
                             airline_icao = airline.get('code', {}).get('icao')
                             
-                            # Logo fallback logic
+                            
                             logo_url = None
                             if airline_iata:
                                 logo_url = f"https://pics.avs.io/200/200/{airline_iata}.png"
                             elif airline_icao:
-                                # Try to map ICAO to IATA if possible, or just use ICAO (pics.avs.io usually needs IATA)
+                                
                                 pass
 
                             flights_found.append({
@@ -104,7 +101,7 @@ def search_flights_data(origin, dest, date_str=None):
                                 "status": status.get('text')
                             })
         
-        # Remove duplicates based on flight number and time
+       
         unique_flights = []
         seen = set()
         for f in flights_found:
