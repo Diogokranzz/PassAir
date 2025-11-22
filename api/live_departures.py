@@ -65,13 +65,23 @@ def get_live_departures_data(airport_iata="GRU"):
 
                         airline_iata = airline.get('code', {}).get('iata')
                         airline_icao = airline.get('code', {}).get('icao')
+                        
+                       
+                        flight_number = identification.get('number', {}).get('default') or "N/A"
+                        if not airline_icao and flight_number != "N/A":
+                            import re
+                            
+                            match = re.match(r'^([A-Z]{3})\d+', flight_number)
+                            if match:
+                                airline_icao = match.group(1)
+                        
                         logo_code = airline_iata or airline_icao
                         logo_url = f"https://pics.avs.io/200/200/{logo_code}.png" if logo_code else None
 
                         departures.append({
                             "id": identification.get('id') or str(uuid.uuid4()),
                             "callsign": identification.get('callsign') or "N/A",
-                            "flight_number": identification.get('number', {}).get('default') or "N/A",
+                            "flight_number": flight_number,
                             "origin": airport_iata,
                             "destination": flight.get('airport', {}).get('destination', {}).get('code', {}).get('iata') or "N/A",
                             "airline": airline.get('name') or "Unknown",
