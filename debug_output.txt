@@ -1,0 +1,1 @@
+{"success":false,"error":"Invalid response from backend","details":{"stdout":"","stderr":"Traceback (most recent call last):\r\n  File \"D:\\Projetos\\Moda\\pass-air\\backend\\search_flights.py\", line 3, in <module>\r\n    from FlightRadar24 import FlightRadar24API\r\nModuleNotFoundError: No module named 'FlightRadar24'\r\n","parseError":"Unexpected end of JSON input"}}

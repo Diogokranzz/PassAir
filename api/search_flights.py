@@ -1,0 +1,98 @@
+from http.server import BaseHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
+import sys
+import json
+from FlightRadar24 import FlightRadar24API
+import concurrent.futures
+
+
+def search_flights_data(origin, dest):
+    try:
+        fr_api = FlightRadar24API()
+        
+        flights_found = []
+        
+        def fetch_page(page):
+            try:
+                return fr_api.get_airport_details(origin, page=page)
+            except:
+                return None
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+            results = executor.map(fetch_page, range(1, 4))
+
+        for details in results:
+            if not details: continue
+            
+            if 'airport' in details and 'pluginData' in details['airport']:
+                plugin_data = details['airport']['pluginData']
+                if 'schedule' in plugin_data and 'departures' in plugin_data['schedule']:
+                    departures = plugin_data['schedule']['departures']['data']
+                    
+                    for item in departures:
+                        flight = item.get('flight', {})
+                        if not flight: continue
+                        
+                        flight_dest = flight.get('airport', {}).get('destination', {}).get('code', {}).get('iata')
+                        
+                        if flight_dest == dest:
+                            airline = flight.get('airline') or {}
+                            aircraft = flight.get('aircraft') or {}
+                            status = flight.get('status') or {}
+                            times = flight.get('time') or {}
+                            identification = flight.get('identification') or {}
+                            
+                            airline_iata = airline.get('code', {}).get('iata')
+                            logo_url = f"https://pics.avs.io/200/200/{airline_iata}.png" if airline_iata else None
+                            
+                            flights_found.append({
+                                "id": identification.get('id'),
+                                "flight_number": identification.get('number', {}).get('default'),
+                                "airline": {
+                                    "name": airline.get('name'),
+                                    "code": airline.get('code', {}).get('iata'),
+                                    "logo": logo_url
+                                },
+                                "aircraft": {
+                                    "model": aircraft.get('model', {}).get('text'),
+                                    "code": aircraft.get('model', {}).get('code')
+                                },
+                                "time": {
+                                    "scheduled": times.get('scheduled', {}).get('departure'),
+                                    "estimated": times.get('estimated', {}).get('departure'),
+                                    "real": times.get('real', {}).get('departure')
+                                },
+                                "status": status.get('text')
+                            })
+        
+        return {"success": True, "data": flights_found}
+        
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        query = urlparse(self.path).query
+        params = parse_qs(query)
+        origin = params.get('origin', [''])[0]
+        dest = params.get('dest', [''])[0]
+        
+        if not origin or not dest:
+             result = {"success": False, "error": "Missing origin or destination"}
+        else:
+             result = search_flights_data(origin, dest)
+        
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps(result).encode('utf-8'))
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        print(json.dumps({"success": False, "error": "Missing arguments"}))
+    else:
+        origin = sys.argv[1]
+        dest = sys.argv[2]
+        print(json.dumps(search_flights_data(origin, dest)))

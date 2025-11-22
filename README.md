@@ -1,36 +1,23 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PassAir
 
-## Getting Started
+O PassAir é uma aplicação moderna desenvolvida para rastrear voos em tempo real, oferecendo aos usuários informações detalhadas sobre partidas, chegadas e especificidades das aeronaves. O projeto foi construído com foco na experiência do usuário, desempenho e qualidade visual.
 
-First, run the development server:
+## O Processo de Desenvolvimento
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+O desenvolvimento começou com o objetivo de criar uma interface fluida que pudesse consumir dados em tempo real. Iniciamos configurando o frontend com Next.js para garantir uma aplicação rápida e responsiva. Conforme o projeto evoluiu, integramos um backend em Python para interagir com a API do FlightRadar24, permitindo buscar dados precisos de voo.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Uma parte significativa do desenvolvimento foi dedicada à otimização de desempenho. Inicialmente, a busca por imagens de aeronaves era lenta devido à necessidade de verificar múltiplos voos para encontrar uma foto válida. Superamos isso implementando uma estratégia de busca paralela, que reduziu drasticamente os tempos de carregamento. Também implementamos Renderização no Lado do Servidor (SSR) para o carregamento inicial de dados, garantindo que os usuários vejam informações de voo imediatamente ao abrir o aplicativo.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Linguagens e Tecnologias Utilizadas
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+O projeto utiliza um conjunto robusto de tecnologias modernas:
 
-## Learn More
+*   **TypeScript e React (Next.js)**: Para o frontend, proporcionando segurança de tipos e uma arquitetura baseada em componentes.
+*   **Tailwind CSS**: Para estilização, permitindo um design personalizado e responsivo.
+*   **Python**: Para a lógica de backend, especificamente para interagir com APIs de dados de voo externos e processar estruturas de dados complexas.
 
-To learn more about Next.js, take a look at the following resources:
+## Desafios Encontrados
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Um dos principais desafios foi lidar com a inconsistência de dados externos. Frequentemente, imagens de aeronaves ou detalhes específicos de voo estavam ausentes. Para resolver isso, criamos uma estratégia inteligente que busca imagens alternativas da mesma companhia aérea ou modelo de aeronave, garantindo uma experiência visual rica mesmo quando os dados são escassos.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Outro desafio foi garantir que a aplicação permanecesse responsiva durante a busca de dados pesados. Resolvemos isso implementando estados de carregamento claros e otimizando nossas chamadas de API. Também focamos na qualidade do código, mantendo uma base limpa e profissional.

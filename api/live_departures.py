@@ -1,0 +1,118 @@
+from http.server import BaseHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
+import sys
+import json
+from FlightRadar24 import FlightRadar24API
+import uuid
+import datetime
+
+
+def get_live_departures_data(airport_iata="GRU"):
+    try:
+        fr_api = FlightRadar24API()
+        departures = []
+        
+        try:
+            details = fr_api.get_airport_details(airport_iata)
+            
+            if 'airport' in details and 'pluginData' in details['airport']:
+                plugin_data = details['airport']['pluginData']
+                if 'schedule' in plugin_data and 'departures' in plugin_data['schedule']:
+                    data = plugin_data['schedule']['departures']['data']
+                    
+                    for item in data:
+                        flight = item.get('flight', {})
+                        if not flight: continue
+                        
+                        identification = flight.get('identification', {})
+                        airline = flight.get('airline') or {}
+                        aircraft = flight.get('aircraft') or {}
+                        status = flight.get('status', {}).get('text') or "Scheduled"
+                        
+                        times = flight.get('time', {})
+                        scheduled_dep = times.get('scheduled', {}).get('departure')
+                        scheduled_arr = times.get('scheduled', {}).get('arrival')
+                        
+                        duration_str = "N/A"
+                        if scheduled_dep and scheduled_arr:
+                            try:
+                                dep_dt = datetime.datetime.fromtimestamp(scheduled_dep)
+                                arr_dt = datetime.datetime.fromtimestamp(scheduled_arr)
+                                diff = arr_dt - dep_dt
+                                hours, remainder = divmod(diff.seconds, 3600)
+                                minutes = remainder // 60
+                                duration_str = f"{hours}h {minutes}m"
+                            except:
+                                pass
+
+                        dep_time_str = "TBD"
+                        if scheduled_dep:
+                            dep_time_str = datetime.datetime.fromtimestamp(scheduled_dep).strftime('%H:%M')
+                            
+                        arr_time_str = "TBD"
+                        if scheduled_arr:
+                            arr_time_str = datetime.datetime.fromtimestamp(scheduled_arr).strftime('%H:%M')
+
+                        departures.append({
+                            "id": identification.get('id') or str(uuid.uuid4()),
+                            "callsign": identification.get('callsign') or "N/A",
+                            "flight_number": identification.get('number', {}).get('default') or "N/A",
+                            "origin": airport_iata,
+                            "destination": flight.get('airport', {}).get('destination', {}).get('code', {}).get('iata') or "N/A",
+                            "airline": airline.get('name') or "Unknown",
+                            "airline_icao": airline.get('code', {}).get('icao'),
+                            "airline_logo": f"https://pics.avs.io/200/200/{airline.get('code', {}).get('iata')}.png" if airline.get('code', {}).get('iata') else None,
+                            "aircraft": aircraft.get('model', {}).get('text') or "N/A",
+                            "status": status,
+                            "duration": duration_str,
+                            "departureTime": dep_time_str,
+                            "arrivalTime": arr_time_str
+                        })
+        except Exception as e:
+            pass
+
+        if not departures:
+            bounds = fr_api.get_bounds_by_point(-23.432, -46.469, 40000)
+            flights = fr_api.get_flights(bounds=bounds)
+            
+            for f in flights:
+                if f.origin_airport_iata == airport_iata:
+                    departures.append({
+                        "id": f.id or str(uuid.uuid4()),
+                        "callsign": f.callsign or "N/A",
+                        "flight_number": f.number or f.callsign or "N/A",
+                        "origin": f.origin_airport_iata,
+                        "destination": f.destination_airport_iata or "N/A",
+                        "airline": f.airline_iata or f.airline_icao or "Unknown",
+                        "airline_icao": f.airline_icao,
+                        "airline_logo": f"https://pics.avs.io/200/200/{f.airline_iata}.png" if f.airline_iata else None,
+                        "aircraft": f.aircraft_code or "N/A",
+                        "status": "En Route" if f.on_ground == 0 else "On Ground",
+                        "duration": "N/A",
+                        "departureTime": "Now",
+                        "arrivalTime": "TBD"
+                    })
+
+        return {"success": True, "data": departures[:6]}
+        
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        query = urlparse(self.path).query
+        params = parse_qs(query)
+        airport = params.get('airport', ['GRU'])[0]
+        
+        result = get_live_departures_data(airport)
+        
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps(result).encode('utf-8'))
+
+
+if __name__ == "__main__":
+    airport = sys.argv[1] if len(sys.argv) > 1 else "GRU"
+    print(json.dumps(get_live_departures_data(airport)))
