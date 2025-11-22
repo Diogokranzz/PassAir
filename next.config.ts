@@ -26,6 +26,29 @@ const nextConfig: NextConfig = {
       }
     ],
   },
+  async rewrites() {
+    if (process.env.NODE_ENV === 'development') {
+      return [
+        {
+          source: '/api/live_departures',
+          destination: '/api/live-departures',
+        },
+        {
+          source: '/api/search_flights',
+          destination: '/api/search-flights',
+        },
+        {
+          source: '/api/flight_details',
+          destination: '/api/flights/[id]',
+        },
+        {
+          source: '/api/flight_service',
+          destination: '/api/flights',
+        }
+      ];
+    }
+    return [];
+  },
 };
 
 export default nextConfig;
