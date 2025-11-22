@@ -66,21 +66,67 @@ def get_live_departures_data(airport_iata="GRU"):
                         airline_iata = airline.get('code', {}).get('iata')
                         airline_icao = airline.get('code', {}).get('icao')
                         
-                       
                         flight_number = identification.get('number', {}).get('default') or "N/A"
+                        
+                        # Fix "N/A" callsign by using flight number
+                        callsign = identification.get('callsign')
+                        if not callsign or callsign == "N/A":
+                            callsign = flight_number
+
                         if not airline_icao and flight_number != "N/A":
                             import re
-                            
-                            match = re.match(r'^([A-Z]{3})\d+', flight_number)
+                            # Try to extract code from flight number
+                            match = re.match(r'^([A-Z0-9]{2,3})\d+', flight_number)
                             if match:
-                                airline_icao = match.group(1)
+                                code = match.group(1)
+                                if len(code) == 3:
+                                    airline_icao = code
+                                elif len(code) == 2:
+                                    # Common IATA to ICAO mapping for GRU airlines
+                                    iata_map = {
+                                        'LA': 'LAN', 'JJ': 'TAM', # LATAM
+                                        'G3': 'GLO', # GOL
+                                        'AD': 'AZU', # Azul
+                                        'ET': 'ETH', # Ethiopian
+                                        'TP': 'TAP', # TAP Portugal
+                                        'AF': 'AFR', # Air France
+                                        'KL': 'KLM', # KLM
+                                        'IB': 'IBE', # Iberia
+                                        'UX': 'AEA', # Air Europa
+                                        'BA': 'BAW', # British Airways
+                                        'LH': 'DLH', # Lufthansa
+                                        'LX': 'SWR', # Swiss
+                                        'TK': 'THY', # Turkish
+                                        'QR': 'QTR', # Qatar
+                                        'EK': 'UAE', # Emirates
+                                        'AA': 'AAL', # American
+                                        'UA': 'UAL', # United
+                                        'DL': 'DAL', # Delta
+                                        'AC': 'ACA', # Air Canada
+                                        'AM': 'AMX', # Aeromexico
+                                        'CM': 'CMP', # Copa
+                                        'AV': 'AVA', # Avianca
+                                        'AR': 'ARG', # Aerolineas Argentinas
+                                        'H2': 'SKU', # Sky Airline
+                                        'JA': 'JAT', # JetSmart
+                                        'BO': 'BOL', # Boliviana
+                                        'PY': 'SUR', # Surinam
+                                    }
+                                    airline_icao = iata_map.get(code)
                         
                         logo_code = airline_iata or airline_icao
+                        # If we still don't have a logo code but have a flight number code, use that
+                        if not logo_code and flight_number != "N/A":
+                             import re
+                             match = re.match(r'^([A-Z0-9]{2,3})\d+', flight_number)
+                             if match:
+                                 logo_code = match.group(1)
+
                         logo_url = f"https://pics.avs.io/200/200/{logo_code}.png" if logo_code else None
 
                         departures.append({
                             "id": identification.get('id') or str(uuid.uuid4()),
-                            "callsign": identification.get('callsign') or "N/A",
+                            "callsign": callsign,
                             "flight_number": flight_number,
                             "origin": airport_iata,
                             "destination": flight.get('airport', {}).get('destination', {}).get('code', {}).get('iata') or "N/A",
