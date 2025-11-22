@@ -53,7 +53,7 @@ export function FlightSidebar({ flight, onClose }: FlightSidebarProps) {
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="fixed top-0 right-0 h-full w-full md:w-96 bg-zinc-900/95 backdrop-blur-xl border-l border-white/10 shadow-2xl z-[2000] overflow-y-auto"
         >
-            {/* Header Image Placeholder */}
+            { }
             <div className="h-48 bg-zinc-800 relative">
                 {loading ? (
                     <div className="w-full h-full flex items-center justify-center bg-zinc-800">
@@ -76,7 +76,7 @@ export function FlightSidebar({ flight, onClose }: FlightSidebarProps) {
             </div>
 
             <div className="p-6 -mt-12 relative">
-                {/* Main Info Card */}
+                { }
                 <div className="bg-zinc-800/50 border border-white/10 rounded-2xl p-6 mb-6 backdrop-blur-md shadow-lg">
                     <div className="flex justify-between items-start mb-4">
                         <div>
@@ -107,7 +107,7 @@ export function FlightSidebar({ flight, onClose }: FlightSidebarProps) {
                     </div>
                 </div>
 
-                {/* Telemetry Grid */}
+                { }
                 <div className="grid grid-cols-2 gap-4 mb-6">
                     <div className="bg-zinc-800/30 border border-white/5 rounded-xl p-4">
                         <div className="flex items-center gap-2 text-zinc-400 mb-2">
@@ -125,7 +125,7 @@ export function FlightSidebar({ flight, onClose }: FlightSidebarProps) {
                     </div>
                 </div>
 
-                {/* More Details */}
+                { }
                 <div className="space-y-4">
                     <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-wider">Flight Status</h3>
                     <div className="bg-zinc-800/30 border border-white/5 rounded-xl p-4 flex items-center gap-4">

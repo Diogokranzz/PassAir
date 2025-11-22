@@ -3,9 +3,9 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "re
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-// Custom Plane Icon (FlightRadar24 Style)
+
 const createPlaneIcon = (heading: number, isSelected: boolean = false, isMobile: boolean = false) => {
-    // Remove drop-shadow on mobile for performance
+
     const filterStyle = isMobile
         ? ""
         : "filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));";
@@ -73,7 +73,7 @@ function MapEvents({ onBoundsChange }: { onBoundsChange?: (bounds: any) => void 
         }
     });
 
-    // Trigger initial bounds on mount
+
     useEffect(() => {
         if (onBoundsChange) {
             const bounds = map.getBounds();
