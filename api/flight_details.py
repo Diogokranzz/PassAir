@@ -7,11 +7,11 @@ import concurrent.futures
 flight_api_error = None
 try:
     from FlightRadar24 import FlightRadar24API
-except ImportError:
+except ImportError as e1:
     try:
         from FlightRadarAPI import FlightRadarAPI as FlightRadar24API
-    except ImportError as e:
-        flight_api_error = str(e)
+    except ImportError as e2:
+        flight_api_error = f"Primary: {e1} | Fallback: {e2}"
 
 class DummyFlight:
     def __init__(self, id):

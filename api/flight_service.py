@@ -6,11 +6,11 @@ import json
 flight_api_error = None
 try:
     from FlightRadar24 import FlightRadar24API
-except ImportError:
+except ImportError as e1:
     try:
         from FlightRadarAPI import FlightRadarAPI as FlightRadar24API
-    except ImportError as e:
-        flight_api_error = str(e)
+    except ImportError as e2:
+        flight_api_error = f"Primary: {e1} | Fallback: {e2}"
 
 
 def get_flights_in_bounds(min_lat=None, max_lat=None, min_lon=None, max_lon=None, limit=1500):
