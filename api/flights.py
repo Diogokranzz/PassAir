@@ -18,22 +18,22 @@ def get_mock_flights():
     return [
         {
             "id": "mock1", "callsign": "LA3418", "latitude": -23.43, "longitude": -46.47, "heading": 45,
-            "altitude": 35000, "ground_speed": 450, "airline": "LA", "airline_icao": "TAM", "aircraft": "A320",
+            "altitude": 35000, "ground_speed": 450, "speed": 450, "airline": "LA", "airline_icao": "TAM", "aircraft": "A320",
             "origin": "GRU", "destination": "POA", "flight_number": "LA3418"
         },
         {
             "id": "mock2", "callsign": "TP89", "latitude": 38.77, "longitude": -9.13, "heading": 200,
-            "altitude": 38000, "ground_speed": 480, "airline": "TP", "airline_icao": "TAP", "aircraft": "A330",
+            "altitude": 38000, "ground_speed": 480, "speed": 480, "airline": "TP", "airline_icao": "TAP", "aircraft": "A330",
             "origin": "LIS", "destination": "GRU", "flight_number": "TP89"
         },
         {
             "id": "mock3", "callsign": "AA950", "latitude": 40.64, "longitude": -73.77, "heading": 180,
-            "altitude": 12000, "ground_speed": 300, "airline": "AA", "airline_icao": "AAL", "aircraft": "B777",
+            "altitude": 12000, "ground_speed": 300, "speed": 300, "airline": "AA", "airline_icao": "AAL", "aircraft": "B777",
             "origin": "JFK", "destination": "GRU", "flight_number": "AA950"
         },
         {
             "id": "mock4", "callsign": "G31234", "latitude": -22.81, "longitude": -43.24, "heading": 270,
-            "altitude": 28000, "ground_speed": 420, "airline": "G3", "airline_icao": "GLO", "aircraft": "B738",
+            "altitude": 28000, "ground_speed": 420, "speed": 420, "airline": "G3", "airline_icao": "GLO", "aircraft": "B738",
             "origin": "GIG", "destination": "CGH", "flight_number": "G31234"
         }
     ]
@@ -77,6 +77,7 @@ def get_flights_in_bounds(min_lat=None, max_lat=None, min_lon=None, max_lon=None
                 "heading": f.heading,
                 "altitude": f.altitude,
                 "ground_speed": f.ground_speed,
+                "speed": f.ground_speed,
                 "airline": f.airline_iata or "Unknown",
                 "airline_icao": f.airline_icao or "",
                 "aircraft": f.aircraft_code or "N/A",

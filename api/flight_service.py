@@ -44,6 +44,7 @@ def get_flights_in_bounds(min_lat=None, max_lat=None, min_lon=None, max_lon=None
                 "heading": f.heading,
                 "altitude": f.altitude,
                 "ground_speed": f.ground_speed,
+                "speed": f.ground_speed,
                 "airline": f.airline_iata or "Unknown",
                 "airline_icao": f.airline_icao or "",
                 "aircraft": f.aircraft_code or "N/A",
