@@ -79,7 +79,7 @@ export function HomeClient({ initialFlights = [] }: HomeClientProps) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {loading ? (
-                        // Loading Skeletons
+
                         Array.from({ length: 6 }).map((_, i) => (
                             <div key={i} className="glass-card p-6 h-[200px] animate-pulse">
                                 <div className="flex justify-between mb-4">
