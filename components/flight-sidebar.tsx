@@ -27,7 +27,11 @@ export function FlightSidebar({ flight, onClose }: FlightSidebarProps) {
         if (flight) {
             setLoading(true);
             setDetails(null);
-            fetch(`/api/flights/${flight.id}`)
+            const params = new URLSearchParams();
+            if (flight.airline_icao) params.append("airline_icao", flight.airline_icao);
+            if (flight.aircraft) params.append("aircraft", flight.aircraft);
+
+            fetch(`/api/flights/${flight.id}?${params.toString()}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {

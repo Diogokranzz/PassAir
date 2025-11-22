@@ -36,6 +36,7 @@ export interface Flight {
     speed: number;
     vertical_speed?: number;
     on_ground?: number;
+    airline_icao?: string;
 }
 
 interface MapProps {
