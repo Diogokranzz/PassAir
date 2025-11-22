@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FlightSearch } from "@/components/flight-search";
 import { FlightCard } from "@/components/flight-card";
 import { FlightDetailsModal } from "@/components/flight-details-modal";
@@ -8,12 +8,31 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 
 interface HomeClientProps {
-    initialFlights: any[];
+    initialFlights?: any[];
 }
 
-export function HomeClient({ initialFlights }: HomeClientProps) {
+export function HomeClient({ initialFlights = [] }: HomeClientProps) {
     const [flights, setFlights] = useState<any[]>(initialFlights);
+    const [loading, setLoading] = useState(true);
     const [selectedFlight, setSelectedFlight] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchFlights = async () => {
+            try {
+                const res = await fetch('/api/live_departures?airport=GRU');
+                const data = await res.json();
+                if (data.success) {
+                    setFlights(data.data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch live departures:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchFlights();
+    }, []);
 
     return (
         <main className="min-h-screen pb-20">
@@ -59,37 +78,52 @@ export function HomeClient({ initialFlights }: HomeClientProps) {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {flights.map((flight, index) => (
-                        <FlightCard
-                            key={flight.id}
-                            flight={{
-                                id: flight.id,
-                                callsign: flight.callsign,
-                                origin: flight.origin,
-                                destination: flight.destination,
-                                status: flight.status,
-                                airline: flight.airline,
-                                departureTime: flight.departureTime,
-                                arrivalTime: flight.arrivalTime,
-                                duration: flight.duration
-                            }}
-                            index={index}
-                            onClick={() => setSelectedFlight({
-                                id: flight.id,
-                                callsign: flight.callsign,
-                                origin: flight.origin,
-                                destination: flight.destination,
-                                status: flight.status,
-                                airline: flight.airline,
-                                airline_icao: flight.airline_icao,
-                                airline_logo: flight.airline_logo,
-                                aircraft: flight.aircraft,
-                                departureTime: flight.departureTime,
-                                arrivalTime: flight.arrivalTime,
-                                duration: flight.duration
-                            })}
-                        />
-                    ))}
+                    {loading ? (
+                        // Loading Skeletons
+                        Array.from({ length: 6 }).map((_, i) => (
+                            <div key={i} className="glass-card p-6 h-[200px] animate-pulse">
+                                <div className="flex justify-between mb-4">
+                                    <div className="h-6 w-20 bg-white/10 rounded" />
+                                    <div className="h-6 w-16 bg-white/10 rounded" />
+                                </div>
+                                <div className="space-y-3">
+                                    <div className="h-8 w-3/4 bg-white/10 rounded mx-auto" />
+                                    <div className="h-4 w-1/2 bg-white/10 rounded mx-auto" />
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        flights.map((flight, index) => (
+                            <FlightCard
+                                key={flight.id}
+                                flight={{
+                                    id: flight.id,
+                                    callsign: flight.callsign,
+                                    origin: flight.origin,
+                                    destination: flight.destination,
+                                    status: flight.status,
+                                    airline: flight.airline,
+                                    departureTime: flight.departureTime,
+                                    arrivalTime: flight.arrivalTime,
+                                    duration: flight.duration
+                                }}
+                                index={index}
+                                onClick={() => setSelectedFlight({
+                                    id: flight.id,
+                                    callsign: flight.callsign,
+                                    origin: flight.origin,
+                                    destination: flight.destination,
+                                    status: flight.status,
+                                    airline: flight.airline,
+                                    airline_icao: flight.airline_icao,
+                                    airline_logo: flight.airline_logo,
+                                    aircraft: flight.aircraft,
+                                    departureTime: flight.departureTime,
+                                    arrivalTime: flight.arrivalTime,
+                                    duration: flight.duration
+                                })}
+                            />
+                        )))}
                 </div>
             </section>
 
