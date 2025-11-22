@@ -77,7 +77,7 @@ export function FlightSearch() {
 
     const searchAirports = async (query: string, setResults: (results: any[]) => void) => {
         try {
-            const res = await fetch(`/api/airports?q=${encodeURIComponent(query)}`);
+            const res = await fetch(`/api/find_airports?q=${encodeURIComponent(query)}`);
             const data = await res.json();
             if (data.success) {
                 setResults(data.data);

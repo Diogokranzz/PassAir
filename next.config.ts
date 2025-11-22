@@ -50,8 +50,8 @@ const nextConfig: NextConfig = {
           destination: '/api/flight_service.py',
         },
         {
-          source: '/api/airports',
-          destination: '/api/airports.py',
+          source: '/api/find_airports',
+          destination: '/api/find_airports.py',
         }
       ];
     }

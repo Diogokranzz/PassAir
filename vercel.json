@@ -25,8 +25,8 @@
             "destination": "/api/flight_details.py?id=:id"
         },
         {
-            "source": "/api/airports",
-            "destination": "/api/airports.py"
+            "source": "/api/find_airports",
+            "destination": "/api/find_airports.py"
         }
     ]
 }
