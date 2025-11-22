@@ -51,11 +51,22 @@ export function FlightSearch() {
         setHasSearched(true);
         setFlightResults([]);
 
+
+        const getIata = (val: string) => {
+            if (val.includes(" - ")) return val.split(" - ")[0];
+            return val.length === 3 ? val.toUpperCase() : val;
+        };
+
+        const originIata = getIata(origin);
+        const destIata = getIata(destination);
+
         try {
-            const res = await fetch(`/api/search-flights?origin=${encodeURIComponent(origin)}&dest=${encodeURIComponent(destination)}`);
+            const res = await fetch(`/api/search_flights?origin=${encodeURIComponent(originIata)}&dest=${encodeURIComponent(destIata)}&date=${date}`);
             const data = await res.json();
             if (data.success) {
                 setFlightResults(data.data);
+            } else {
+                setError(data.error || "Failed to find flights");
             }
         } catch (error) {
             console.error("Flight search error:", error);

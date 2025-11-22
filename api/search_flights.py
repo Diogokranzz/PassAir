@@ -14,7 +14,7 @@ except ImportError as e1:
         flight_api_error = f"Primary: {e1} | Fallback: {e2}"
 
 
-def search_flights_data(origin, dest):
+def search_flights_data(origin, dest, date_str=None):
     if flight_api_error:
         return {"success": False, "error": f"Import Error: {flight_api_error}"}
 
@@ -23,14 +23,22 @@ def search_flights_data(origin, dest):
         
         flights_found = []
         
+        
+        def get_date_from_ts(ts):
+            if not ts: return None
+            import datetime
+            return datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
+
         def fetch_page(page):
             try:
+                # Fetch airport details (schedule)
                 return fr_api.get_airport_details(origin, page=page)
             except:
                 return None
 
+       
         with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-            results = executor.map(fetch_page, range(1, 4))
+            results = list(executor.map(fetch_page, range(1, 4)))
 
         for details in results:
             if not details: continue
@@ -46,6 +54,7 @@ def search_flights_data(origin, dest):
                         
                         flight_dest = flight.get('airport', {}).get('destination', {}).get('code', {}).get('iata')
                         
+                        # Filter by destination
                         if flight_dest == dest:
                             airline = flight.get('airline') or {}
                             aircraft = flight.get('aircraft') or {}
@@ -53,15 +62,31 @@ def search_flights_data(origin, dest):
                             times = flight.get('time') or {}
                             identification = flight.get('identification') or {}
                             
-                            airline_iata = airline.get('code', {}).get('iata')
-                            logo_url = f"https://pics.avs.io/200/200/{airline_iata}.png" if airline_iata else None
+                            # Filter by date if provided
+                            scheduled_ts = times.get('scheduled', {}).get('departure')
+                            if date_str and scheduled_ts:
+                                flight_date = get_date_from_ts(scheduled_ts)
+                                if flight_date != date_str:
+                                    continue
                             
+                            airline_iata = airline.get('code', {}).get('iata')
+                            airline_icao = airline.get('code', {}).get('icao')
+                            
+                            # Logo fallback logic
+                            logo_url = None
+                            if airline_iata:
+                                logo_url = f"https://pics.avs.io/200/200/{airline_iata}.png"
+                            elif airline_icao:
+                                # Try to map ICAO to IATA if possible, or just use ICAO (pics.avs.io usually needs IATA)
+                                # For now, leave as None or try ICAO
+                                pass
+
                             flights_found.append({
                                 "id": identification.get('id'),
                                 "flight_number": identification.get('number', {}).get('default'),
                                 "airline": {
                                     "name": airline.get('name'),
-                                    "code": airline.get('code', {}).get('iata'),
+                                    "code": airline_iata,
                                     "logo": logo_url
                                 },
                                 "aircraft": {
@@ -69,14 +94,23 @@ def search_flights_data(origin, dest):
                                     "code": aircraft.get('model', {}).get('code')
                                 },
                                 "time": {
-                                    "scheduled": times.get('scheduled', {}).get('departure'),
+                                    "scheduled": scheduled_ts,
                                     "estimated": times.get('estimated', {}).get('departure'),
                                     "real": times.get('real', {}).get('departure')
                                 },
                                 "status": status.get('text')
                             })
         
-        return {"success": True, "data": flights_found}
+        # Remove duplicates based on flight number and time
+        unique_flights = []
+        seen = set()
+        for f in flights_found:
+            key = f"{f['flight_number']}_{f['time']['scheduled']}"
+            if key not in seen:
+                seen.add(key)
+                unique_flights.append(f)
+                
+        return {"success": True, "data": unique_flights}
         
     except Exception as e:
         return {"success": False, "error": str(e)}
@@ -88,11 +122,12 @@ class handler(BaseHTTPRequestHandler):
         params = parse_qs(query)
         origin = params.get('origin', [''])[0]
         dest = params.get('dest', [''])[0]
+        date_str = params.get('date', [None])[0]
         
         if not origin or not dest:
              result = {"success": False, "error": "Missing origin or destination"}
         else:
-             result = search_flights_data(origin, dest)
+             result = search_flights_data(origin, dest, date_str)
         
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
@@ -106,4 +141,5 @@ if __name__ == "__main__":
     else:
         origin = sys.argv[1]
         dest = sys.argv[2]
-        print(json.dumps(search_flights_data(origin, dest)))
+        date_str = sys.argv[3] if len(sys.argv) > 3 else None
+        print(json.dumps(search_flights_data(origin, dest, date_str)))

@@ -19,6 +19,10 @@
         {
             "source": "/api/flights/:id",
             "destination": "/api/flight_details.py?id=:id"
+        },
+        {
+            "source": "/api/airports",
+            "destination": "/api/airports.py"
         }
     ]
 }

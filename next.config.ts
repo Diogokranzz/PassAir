@@ -44,6 +44,10 @@ const nextConfig: NextConfig = {
         {
           source: '/api/flight_service',
           destination: '/api/flights',
+        },
+        {
+          source: '/api/airports',
+          destination: '/api/airports.py',
         }
       ];
     }
