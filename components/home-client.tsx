@@ -19,7 +19,7 @@ export function HomeClient({ initialFlights = [] }: HomeClientProps) {
     useEffect(() => {
         const fetchFlights = async () => {
             try {
-                const res = await fetch('/api/live_departures?airport=GRU');
+                const res = await fetch('/api/live-departures?airport=GRU');
                 const data = await res.json();
                 if (data.success) {
                     setFlights(data.data);
