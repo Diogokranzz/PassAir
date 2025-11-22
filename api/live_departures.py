@@ -2,7 +2,10 @@ from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 import sys
 import json
-from FlightRadar24 import FlightRadar24API
+try:
+    from FlightRadar24 import FlightRadar24API
+except ImportError:
+    from FlightRadarAPI import FlightRadarAPI as FlightRadar24API
 import uuid
 import datetime
 
