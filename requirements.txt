@@ -1,2 +1,2 @@
-FlightRadar24API
+FlightRadarAPI
 requests
