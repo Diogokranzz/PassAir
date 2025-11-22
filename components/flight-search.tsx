@@ -159,6 +159,9 @@ export function FlightSearch() {
                                         </div>
                                         <div className="text-xs text-muted-foreground pl-12">
                                             {airport.city}, {airport.country}
+                                            <div className="text-[10px] text-red-500 hidden group-hover:block">
+                                                {JSON.stringify(airport)}
+                                            </div>
                                         </div>
                                     </button>
                                 ))}
